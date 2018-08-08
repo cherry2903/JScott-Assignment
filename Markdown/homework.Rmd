@@ -1,0 +1,133 @@
+---
+title: "Hw3"
+author: "Guanhua_Zhang"
+date: "2018/8/7"
+output: html_document
+---
+
+```{r}
+rm(list=ls())
+#install.packages('quantmod')
+library(quantmod)
+library(mosaic)
+
+library(foreach)
+sp500 <- new.env()
+SPY=getSymbols("SPY",auto.assign = FALSE, from = "2005-01-01",to='2018-01-01')
+TLT=getSymbols("TLT",auto.assign = FALSE, from = "2005-01-01",to='2018-01-01')
+LQD=getSymbols("LQD",auto.assign = FALSE, from = "2005-01-01",to='2018-01-01')
+EEM=getSymbols("EEM",auto.assign = FALSE, from = "2005-01-01",to='2018-01-01')
+VNQ=getSymbols("VNQ",auto.assign = FALSE, from = "2005-01-01",to='2018-01-01')
+
+SPYa = adjustOHLC(SPY)
+TLTa = adjustOHLC(TLT)
+LQDa = adjustOHLC(LQD)
+EEMa = adjustOHLC(EEM)
+VNQa = adjustOHLC(VNQ)
+
+
+all_returns_1 = cbind(ClCl(SPYa),ClCl(TLTa),ClCl(LQDa),ClCl(EEMa),ClCl(VNQa))
+head(all_returns_1)
+all_returns_1 = as.matrix(na.omit(all_returns_1))
+
+return.today_1 = resample(all_returns_1, 1, orig.ids=FALSE)
+
+initial_wealth = 100000
+sim1 = foreach(i=1:1000, .combine='rbind') %do% {
+	total_wealth_1 = initial_wealth
+	weights_1 = c(0.2, 0.2, 0.2, 0.2, 0.2)
+	holdings_1 = weights_1 * total_wealth_1
+	n_days_1 = 20
+	wealthtracker_1 = rep(0, n_days_1)
+	for(today in 1:n_days_1) {
+		return.today_1 = resample(all_returns_1, 1, orig.ids=FALSE)
+		holdings_1 = holdings_1 + holdings_1*return.today_1
+		total_wealth_1 = sum(holdings_1)
+		wealthtracker_1[today] = total_wealth_1
+	}
+	wealthtracker_1
+}
+
+head(sim1)
+hist(sim1[,n_days_1], 25)
+
+# Profit/loss
+mean(sim1[,n_days_1])
+hist(sim1[,n_days_1]- initial_wealth, breaks=30)
+
+# Calculate 5% value at risk
+quantile(sim1[,n_days_1], 0.05) - initial_wealth
+
+```
+
+
+```{r}
+all_returns_2 = cbind(ClCl(SPYa),ClCl(TLTa),ClCl(LQDa),ClCl(EEMa))
+head(all_returns_2)
+all_returns_2 = as.matrix(na.omit(all_returns_2))
+
+return.today_2 = resample(all_returns_2, 1, orig.ids=FALSE)
+
+initial_wealth = 100000
+sim2 = foreach(i=1:1000, .combine='rbind') %do% {
+	total_wealth_2 = initial_wealth
+	weights_2 = c(0.25, 0.25, 0.25, 0.25)
+	holdings_2 = weights_2 * total_wealth_2
+	n_days_2 = 20
+	wealthtracker_2 = rep(0, n_days_2)
+	for(today in 1:n_days_2) {
+		return.today_2 = resample(all_returns_2, 1, orig.ids=FALSE)
+		holdings_2 = holdings_2 + holdings_2*return.today_2
+		total_wealth_2 = sum(holdings_2)
+		wealthtracker_2[today] = total_wealth_2
+	}
+	wealthtracker_2
+}
+
+head(sim2)
+hist(sim2[,n_days_2], 25)
+
+# Profit/loss
+mean(sim2[,n_days_2])
+hist(sim2[,n_days_2]- initial_wealth, breaks=30)
+
+# Calculate 5% value at risk
+quantile(sim2[,n_days_2], 0.05) - initial_wealth
+```
+
+
+```{r}
+all_returns_3 = cbind(ClCl(EEMa),ClCl(VNQa))
+head(all_returns_3)
+all_returns_3 = as.matrix(na.omit(all_returns_3))
+
+return.today_3 = resample(all_returns_3, 1, orig.ids=FALSE)
+
+initial_wealth = 100000
+sim3 = foreach(i=1:1000, .combine='rbind') %do% {
+	total_wealth_3 = initial_wealth
+	weights_3 = c(0.5, 0.5)
+	holdings_3 = weights_3 * total_wealth_3
+	n_days_3 = 20
+	wealthtracker_3 = rep(0, n_days_3)
+	for(today in 1:n_days_3) {
+		return.today_3 = resample(all_returns_3, 1, orig.ids=FALSE)
+		holdings_3 = holdings_3 + holdings_3*return.today_3
+		total_wealth_3 = sum(holdings_3)
+		wealthtracker_3[today] = total_wealth_3
+	}
+	wealthtracker_3
+}
+
+head(sim3)
+hist(sim3[,n_days_3], 25)
+
+# Profit/loss
+mean(sim3[,n_days_3])
+hist(sim3[,n_days_3]- initial_wealth, breaks=30)
+
+# Calculate 5% value at risk
+quantile(sim3[,n_days_3], 0.05) - initial_wealth
+
+```
+
