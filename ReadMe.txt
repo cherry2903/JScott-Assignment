@@ -1,0 +1,1 @@
+This repository has solutions to the assignment for course Predictive Modeling, Instructor- James Scott
