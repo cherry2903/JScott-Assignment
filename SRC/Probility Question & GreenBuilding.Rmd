@@ -1,0 +1,32 @@
+---
+title: "Question1"
+author: "Guanhua_Zhang"
+date: "2018/8/8"
+output: html_document
+---
+
+PART A
+P(Y)=P(Y,RC)+P(Y,TC)=P(Y|RC)*P(RC)+P(Y|TC)*P(TC)
+0.3*0.5+0.7*P(Y|TC)=0.65
+P(Y|TC)=0.714
+
+PART B
+P(Positive)=P(Positive,D)+P(Positive,not D)=P(Positive|D)*P(D)+P(Positive|not D)*P(not D)=0.000025*0.993+0.999975*0.00001
+P(D|Positive)=P(D)*P(positive|D)/P(Positive)=0.000025*0.993/(0.000025*0.993+0.999975*0.0001)=0.198824
+
+Question 1
+Firstly,we shouldn’t remove buildings with low occupancy rate from consideration,since there should be the reasons for the low occupancy rates for these buildings and there is a handful of the buildings in the data set had very low occupancy rates. Here we find the factors that influence the occupancy. They are the growth rate of the employment in this region, the total heating and cooling days in a year in this building, the rent in this cluster, the age of the building, and the amenities. If we want to keep our building with high occupancy, we should focus on these factors and try to build the building in the high rent cluster with good amenities. 
+
+```{r}
+library(mosaic)
+green = read.csv('../data/greenbuildings.csv')
+summary(green)
+green_only = subset(green, green_rating==1)
+not_green = subset(green, green_rating==0)
+#the distributation of occupancy
+hist(green_only$leasing_rate, 25)
+hist(not_green$leasing_rate, 25)
+summary(lm(leasing_rate~.,data=green))
+
+```
+
