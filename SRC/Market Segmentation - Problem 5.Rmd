@@ -1,0 +1,257 @@
+---
+title: "Problem 5: Market Segmentation"
+output: html_document
+---
+
+```{r echo=FALSE, results='hide',message=FALSE}
+library(corrplot)
+#Load the data
+## set your working directory
+getwd()
+setwd("C:\\Users\\vsm397\\Desktop\\Vir's Personal documents\\Pred Modeling (MSBA)")
+```
+
+
+###Goal of Report
+The following report is designed to assist NutrientH2O identify strategic market segmentations that emerge based on their social media audience on Twitter. Performing text-based analysis can be incredibly beneficial for NutrientH2O to identify consumers that can be segmented and targeted directly and efficiently. The following report will show the process of uncovering insights from the market-research data, as well as provide interesting and well-supported conclusions about the audience for NutrientH2O.
+```{r echo=FALSE}
+social_mkting_df = read.csv('social_marketing.csv', header=TRUE)
+#head(social_mkting_df)
+```
+
+
+```{r echo=FALSE}
+#Filtering out columns = Chatter, Uncategorised, Spam and Adult. Analyzing the data we can find that these few categories 
+#might not be a good fit in most of the clusters
+social_mkting_df <- social_mkting_df[,-c(1,5,35,36)]
+
+#Check if any interest are correlated
+```
+
+###Cleaning the Data
+Much like nearly any dataset one will encounter, the process of going through and cleaning the data is a vital one that requires a thorough understanding of the business problem at hand. For this particular dataset on sentiments on social media, there are inherent concerns with the text data that must be addressed prior to performing a thorough clustering-based analysis. Firstly, a decision was made to not incorporate the categories of: "Chatter", "Spam", "Un-Categorized", and "Adult" when conducting the analysis. These categories are not only inapprorpiate, but will not provide business value to NutrientH2O, which is ultimately the end goal. 
+
+
+### Understanding the Data
+First and foremost, we set out to get an overall sense of the information the dataset was providing us. To begin, a correlation matrix was created to have an intial identification of potential market segmentation. Correlation matrices are effective for getting a solid foundation of the dataset, and can later be used to refer back to once various clustering algorithms are performed, such as k-means and hierarchical clustering methods.   
+
+```{r echo=FALSE, results='hide', message=FALSE}
+corr_mat=cor(social_mkting_df,method="s")
+corr_mat[1:32, 1:32]
+```
+```{r echo=FALSE}
+corrplot(corr_mat)
+```
+
+
+As mentioned, the objective of this correlation approach is to gain an understanding of trends and relationships in the data to provide a sense of clarity and direction for further analysis. As one can deduct from the matrix, there already appears to be certain sunjects that appear to have somewhat of a relationship. For example, "Personal Fitness" and "Health Nutrition" are understandibly highly correlated. Based on this fact, one can infer that a so-called 'fitness enthusiast' has the potential to be clustered based on the relationship between these two variables. Further examples include: 'News and Politics', 'Shopping and Photo Sharing, 'Parents, Religion, and Sports Fandom'.
+
+
+```{r echo=FALSE, message=FALSE, results='hide'}
+# Center/scale the data
+social_mkting_scaled <- scale(social_mkting_df) 
+#View(head(social_mkting_scaled))
+
+set.seed(99)
+```
+
+
+```{r echo=FALSE, message=FALSE, results='hide'}
+###Kmeans Clustering 
+par(mfrow = c(1, 1))
+
+# Scree plot for identifying K
+
+# Initialize total within sum of squares error: wss
+wss <- 0
+
+# Look over 1 to 15 possible clusters which gives minimum sum of squares
+for (i in 1:15) {
+  # Fit the model: km.out
+  km.out <- kmeans(social_mkting_scaled, centers = i, nstart = 20, iter.max = 50)
+  # Save the within cluster sum of squares
+  wss[i] <- km.out$tot.withinss
+}
+```
+
+### Data Analysis
+#### K-Means Clustering
+To begin the analysis of the business problem at hand, we made a decision to start off with a K-Means Clustering method for analysis. Based on the unsupervised nature of the problem, as well as the end goal of helping NutrientH2) identify market segments, we decided to begin our approach using K-means.
+Once the algorithm was performed, we set out to identify the number of clusters - aka K-value- from a Scree Plot. The Scree Plot would help visualize the ideal number of clusters based on the point where the slope of the line begins to level off.
+```{r}
+#Produce a Scree Plot
+```
+```{r echo=FALSE}
+
+plot(1:15, wss, type = "b", 
+     xlab = "Number of Clusters", 
+     ylab = "Within groups sum of squares")
+```
+
+As one can see, it appears there is a natural leveling off phenomena once the number of clusters reaches 11. Therefore, we made a decision to choose 11 as our k-value for further analysis. Thus far, we have a general awareness of the number of market segmentations to look for as we dive deeper into the text data.
+
+
+#### Visualzing Clusters Identified by K-Means
+Now that the k-means algorithm has generated a proposed number of clusters to be 11, we wanted to visualize this concept to see where specifically these clusters can be identified in the dataset. 
+
+
+```{r echo=FALSE, message=FALSE, results='hide'}
+# Taking optimum vale of K after which no improvement in SSE and fitting the model again
+k <- 11
+
+# Build model with k clusters: km.out
+set.seed(99)
+km.out <- kmeans(social_mkting_scaled, centers = k, nstart = 50, iter.max = 50)
+
+# View the resulting model
+km.out
+
+#plotting the clusters
+#library(cluster)
+#clusplot(social_mkting_scaled, km.out$cluster, main='2D representation of the Cluster solution', 
+         #color=TRUE, shade=TRUE, labels=2, lines=0)
+```
+
+
+```{r echo=FALSE, message=FALSE, results='hide'}
+#identifying the groups in each cluster
+for (i in 1:k){
+  pie(colSums(social_mkting_df[km.out$cluster==i,]),cex=0.9)
+}
+
+### # Perform PCA 
+pr.out = prcomp(social_mkting_df, scale = TRUE)
+
+Cols=function(vec){cols=rainbow(length(unique(vec)));return(cols[as.numeric(as.factor(vec))])}
+```
+
+
+Based on the charts given above, here are the Clusters Identified using K-Means:
+
+1. Dating, School, Fashion, Photosharing
+2. Food, Religion, Parenting, Sports Fandom
+3. Politics, Travel, News, Computers
+4. Photo Sharing, Shopping, Current Events
+5. Photo Sharing, Travel, Health & Nutrition
+6. Cooking, Photo Sharing, Beauty, Fashion
+7. TV & Film, Art
+8. Online Gaming, College/University, Sports Playing
+9. TV & Film, College/University, Music
+10. Health & Nutrition, Personal Fitness, Cooking, Outdoors
+11. News, Automotive, Politics
+
+
+#### Hierarchical Clustering
+To provide more clarity and confirm the result of 11 potential market segmentations from the k-means method, we performed a Hierarchical Clustering algorithm to compare and determine what similarities would emerge.
+
+
+#### Principal Component Analysis
+It is important to first mention that a decision was made to use Principal Component Analysis to leverage with our use of Hierarchical Clustering. PC Analysis is an effective means of extracting insights from variables that could potentially be correlated, and we can use our PC Analysis to explain how much variability can be explained.
+
+```{r echo=FALSE,message=FALSE, results='hide'}
+# plotting the first three components score vectors
+par(mfrow=c(1,2))
+#plot(pr.out$x[,1:2], col=Cols(colnames(social_mkting_df)), pch=19,xlab="Z1",ylab="Z2")
+#plot(pr.out$x[,c(1,3)], col=Cols(colnames(social_mkting_df)), pch=19,xlab="Z1",ylab="Z3")
+
+#Summary for PC output
+#summary(pr.out)
+
+#Plot to explain the variance explained by first few PC
+#plot(pr.out)
+```
+
+
+```{r echo=FALSE}
+#PVE for each PC(scree plot) and the cumulative PVE plot
+par(mfrow=c(1,2))
+plot(summary(pr.out)$importance[2,], type="o", ylab="PVE", xlab="Principal Component ",col="blue")
+plot(summary(pr.out)$importance[3,], type="o", ylab="Cumulative PVE", xlab="Principal Component ", col="brown3")
+```
+
+The key insight we can extract from the Principal Component Graphs shown above is the fact that 80% of the variability of our data can be explained with 16 principal components
+
+
+#### Hierarchical Clustering - based on 16 Principal Components
+
+```{r echo=FALSE}
+# Fit hierarchical clustering on these 16 PCs
+
+# We use Correlation-based distance here(market segment problem)
+res.cor <- cor(t(pr.out$x[,1:16]), method = "pearson")
+d.cor <- as.dist(1 - res.cor)
+
+# fitting hierarchical clustering
+hc.out_single = hclust(d.cor, method = 'single')
+# Visualization of hclust
+#plot(hc.out_single, labels = FALSE, hang = -1)
+
+hc.out_complete = hclust(d.cor, method = 'complete')
+# Visualization of hclust
+plot(hc.out_complete, labels = FALSE, hang = -1)
+```
+
+# STILL NEED TO EXPLAIN: Choosing one linkage method in clustering over the other
+```{r echo=FALSE}
+hc.out_average = hclust(d.cor, method = 'average')
+# Visualization of hclust
+plot(hc.out_average, labels = FALSE, hang = -1)
+
+#Average-link (or group average) clustering is a compromise between the sensitivity of 
+#complete-link clustering to outliers and the tendency of single-link clustering to form 
+#long chains that do not correspond to the intuitive notion of clusters as compact, spherical objects.
+```
+
+#### Looking at the tree, we can cut the tree at the height of 0.9
+```{r echo=FALSE}
+hc_clust_avg = cutree(hc.out_average, h = 0.9)
+table(hc_clust_avg)
+```
+
+
+
+```{r echo=FALSE,message=FALSE, out.width='.49\\linewidth', fig.width=3, fig.height=3,fig.show='hold',fig.align='center'}
+##identifying the groups in each cluster
+for (i in 1:11){
+  pie(colSums(social_mkting_df[hc_clust_avg == i,]),cex=0.9)
+}
+```
+
+Based on the charts given above, here are the Clusters Identified using Hierarchical Clustering:
+
+1. Health & Nutrition, Personal Fitness, Cooking, Outdoors
+2. Food, Religion, Parenting, Sports Fandom
+3. TV & Film, Art
+4. Photo Sharing, Shopping, Current Events, Travel
+5. Politics, Travel, News, Computers
+6. Cooking, Photo Sharing, Beauty, Fashion
+7. Dating, School, Fashion, Photo Sharing 
+8. Home & Garden, Health Nutrition, College/University
+9. Online Gaming, College/University, Sports Playing
+10. TV & Film, College/University, Music
+11. News, Automotive, Politics, Sports Fandom
+
+### Insights and Recommendations
+The comprehensive approach described above was the analysis that went into uncovering insights that could be beneficial for NutrientH2O for the purposes of providing meaningful market segmentation. We used a cluster approach to define various market segments from the social media data presented. 
+
+
+The most desired insight to uncover is to explicitly state the distinct market segments that emerged from the analysis. Based on the K-Means and Hierarchical Clustering algorithms, there were a total of 9 Market Segments derived:
+
+1. Dating, School, Fashion, Photo Sharing
+2. Food, Religion, Parenting, Sports Fandom
+3. Politics, Travel, News, Computers
+4. Photo Sharing, Shopping, Current Events, Travel
+5. Cooking, Photo Sharing, Beauty, Fashion
+6. Online Gaming, College/University, Sports Playing
+7. TV & Film, College/University, Music
+8. Health & Nutrition, Personal Fitness, Cooking, Outdoors
+9. News, Automotive, Politics, Sports Fandom
+
+
+With this Market Segmentation knowledge in mind, NutrientH2O can design specific marketing campaigns to these 9 distinct audience members. 
+
+
+For example, it is highly likely that the demographic information for segment #5 - 'Cooking, Photo Sharing, Beauty, Fashion' is vastly different than the demographic makeup of segment #6 - 'Online Gaming, College/University, Sports Playing'. More specifically, based on substantive knowledge of those subject matters, it is fair to assume that segment #5 is comprised of a larger female population than segment #6. Therefore, NutrientH2O can use this market segmentation knowledge to their advantage by designing two separate marketing campaigns to address members of each segment #5 and #6 to convey the most compelling message.
+
+
+Insights such as the one descrived can be invalubale to a firm in terms of strategic marketing, and we were able to leverage clustering algorithms for the purposes of identifying market segments. Our analysis was not only thorough, but also confirmed some of the initial intuition we had when first evaluating the dataset, and can be used by NutrientH2O to increase profitability.
