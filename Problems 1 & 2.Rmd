@@ -1,0 +1,99 @@
+---
+title: "Problem 1 & 2"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Problem 1: Probability Practice
+### Part A
+The following arithmetic shows the process in which the question of: "What fraction of people who are TRUTHFUL CLICKERS - TC -  answered YES" is answered. The desired solution is given in the form: P(Y|TC), which reads as: "The Probability of answering YES given the fact that the individual is a Truthful Clicker":
+
+
+P(Y) = P(Y,RC) + P(Y,TC) = 
+
+
+P(Y|RC) x P(RC) + P(Y|TC) x P(TC) =
+
+
+0.3 x 0.5 + 0.7 x P(Y|TC) = 0.65
+
+
+P(Y|TC) = __0.714__
+
+
+__71.4% of people who are Truthful Clickers answered YES__
+
+
+### PART B 
+The following arithmetic shows the process in which the question of: "What is the probability that an individual has the disease supposing that the individual tests positive" is answered. 
+
+
+P(Positive) = P(Positive, D) + P(Positive, NOT D) = 
+
+
+P(Positive|D) x P(D) + P(Positive|NOT D) x P(NOT D) =
+
+
+0.000025 x 0.993 + 0.9999750.00001 P(D|Positive) = P(D) 
+
+
+P(Positive|D) / P(Positive) = 
+
+
+0.000025 x 0.993 / (0.000025 x 0.993 + 0.999975 x 0.0001) = 
+
+
+__0.198824__
+
+
+__If someone were to test positive, there is only a 19.88% chance that they actually do have the disease__
+
+
+Given the result of this calculation, it is clear that there are severe concerns if considering an implementation of a universal testing policy for this disease. Based on our calculation, if an individual tests positive, there is only a _1 in 5 chance_ that they do in fact have the disease. This has the potential to cause many people heartache by giving them a _False Positive_ test result.
+
+
+##Problem 2: Green Buildings 
+
+
+###Goal of Assignment
+
+
+The goal of what we are being asked to do is to help the developer understand whether or not the so-called Stats-Guru on her staff has provided her with legitimate and reliable analysis. We will walk you through the process we went through to analyze the dataset and ultimately decide whether or not we agree with the findings of her staff member.
+_Note: we will primarily focus on data visualization to illustrate the reasons behind our conclusions_
+
+
+###Exploratory Analysis
+###Understanding Low Occupancy Rates
+
+
+Firstly, we should not remove buildings with low occupancy rates from consideration. The reason for this is because we need to identify the reasons why there are low occupancy rates for these particular buildings. The buildings in which there are very low occupancy rates in the dataset need to be evaluated to determine underlying reasons why such circumstances exist. 
+
+
+Therefore, we set out to find the factors that influence the occupancy rates. These influencing factors are: the growth rate of the employment in this region, the total heating and cooling days in a year in this building, the rent in this cluster, the age of the building, and the amenities. 
+
+
+If the goal is to keep our building with a high occupancy rate, we should focus on these key factors and try to build the building in the high rent cluster with good amenities.  
+
+
+```{r echo=FALSE, message=FALSE, results='hide'}
+# set your working directory
+getwd()
+setwd("C:\\Users\\vsm397\\Desktop\\Vir's Personal documents\\Pred Modeling (MSBA)")
+
+## import the data and create data frame
+green <- read.csv("greenbuildings.csv",header = T)
+
+library(mosaic)
+
+green_only = subset(green, green_rating==1)
+not_green = subset(green, green_rating==0)
+
+#the distributation of occupancy
+hist(green_only$leasing_rate, 25)
+hist(not_green$leasing_rate, 25)
+#summary(lm(leasing_rate~.,data=green))
+```
+
